@@ -12,10 +12,16 @@ require("hardhat-gas-reporter");
 module.exports = {
   networks: {
     hardhat: {
-      forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-        blockNumber: 11765131,
-      },
+      // forking: {
+      //   url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+      //   blockNumber: 11765131,
+      // },
+    },
+    // Moonbase Alpha network specification
+    moonbase: {
+      url: `https://rpc.testnet.moonbeam.network`,
+      chainId: 1287,
+      accounts: [process.env.MOONBASE_PRIV_KEY],
     },
     live: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,

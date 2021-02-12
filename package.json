@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test",
+    "test": "hardhat test ./test/registry.test.js",
     "test-w": "hardhat test ./test/wallet.test.js",
+    "moon": "hardhat test ./test/moon.test.js --network moonbase",
     "compile": "hardhat compile",
     "deploy": "truffle migrate --reset --network etha",
     "deploy-main": "truffle migrate --reset --network mainnet",
