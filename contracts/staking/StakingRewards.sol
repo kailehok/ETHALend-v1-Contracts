@@ -1,38 +1,153 @@
-// File: openzeppelin-solidity-2.3.0/contracts/math/Math.sol
-
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.16;
 
 /**
- * @dev Standard math utilities missing in the Solidity language.
+ * @dev Interface of the ERC20 standard as defined in the EIP. Does not include
+ * the optional functions; to access them see `ERC20Detailed`.
  */
-library Math {
+interface IERC20 {
     /**
-     * @dev Returns the largest of two numbers.
+     * @dev Returns the amount of tokens in existence.
      */
-    function max(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a >= b ? a : b;
-    }
+    function totalSupply() external view returns (uint256);
 
     /**
-     * @dev Returns the smallest of two numbers.
+     * @dev Returns the amount of tokens owned by `account`.
      */
-    function min(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a < b ? a : b;
-    }
+    function balanceOf(address account) external view returns (uint256);
 
     /**
-     * @dev Returns the average of two numbers. The result is rounded towards
-     * zero.
+     * @dev Moves `amount` tokens from the caller's account to `recipient`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a `Transfer` event.
      */
-    function average(uint256 a, uint256 b) internal pure returns (uint256) {
-        // (a + b) / 2 can overflow, so we distribute
-        return (a / 2) + (b / 2) + (((a % 2) + (b % 2)) / 2);
-    }
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through `transferFrom`. This is
+     * zero by default.
+     *
+     * This value changes when `approve` or `transferFrom` are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * > Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an `Approval` event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `sender` to `recipient` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a `Transfer` event.
+     */
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to `approve`. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-// File: openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be aplied to your functions to restrict their use to
+ * the owner.
+ */
+contract Ownable {
+    address private _owner;
 
-pragma solidity ^0.5.0;
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /**
+     * @dev Initializes the contract setting the deployer as the initial owner.
+     */
+    constructor () internal {
+        _owner = msg.sender;
+        emit OwnershipTransferred(address(0), _owner);
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(isOwner(), "Ownable: caller is not the owner");
+        _;
+    }
+
+    /**
+     * @dev Returns true if the caller is the current owner.
+     */
+    function isOwner() public view returns (bool) {
+        return msg.sender == _owner;
+    }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore. Can only be called by the current owner.
+     *
+     * > Note: Renouncing ownership will leave the contract without an owner,
+     * thereby removing any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public onlyOwner {
+        emit OwnershipTransferred(_owner, address(0));
+        _owner = address(0);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public onlyOwner {
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     */
+    function _transferOwnership(address newOwner) internal {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        emit OwnershipTransferred(_owner, newOwner);
+        _owner = newOwner;
+    }
+}
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -140,101 +255,33 @@ library SafeMath {
     }
 }
 
-// File: openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol
-
-pragma solidity ^0.5.0;
-
 /**
- * @dev Interface of the ERC20 standard as defined in the EIP. Does not include
- * the optional functions; to access them see `ERC20Detailed`.
+ * @dev Standard math utilities missing in the Solidity language.
  */
-interface IERC20 {
+library Math {
     /**
-     * @dev Returns the amount of tokens in existence.
+     * @dev Returns the largest of two numbers.
      */
-    function totalSupply() external view returns (uint256);
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
+    }
 
     /**
-     * @dev Returns the amount of tokens owned by `account`.
+     * @dev Returns the smallest of two numbers.
      */
-    function balanceOf(address account) external view returns (uint256);
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
+    }
 
     /**
-     * @dev Moves `amount` tokens from the caller's account to `recipient`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a `Transfer` event.
+     * @dev Returns the average of two numbers. The result is rounded towards
+     * zero.
      */
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through `transferFrom`. This is
-     * zero by default.
-     *
-     * This value changes when `approve` or `transferFrom` are called.
-     */
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * > Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an `Approval` event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `sender` to `recipient` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a `Transfer` event.
-     */
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to `approve`. `value` is the new allowance.
-     */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    function average(uint256 a, uint256 b) internal pure returns (uint256) {
+        // (a + b) / 2 can overflow, so we distribute
+        return (a / 2) + (b / 2) + ((a % 2 + b % 2) / 2);
+    }
 }
-
-// File: openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20Detailed.sol
-
-pragma solidity ^0.5.0;
 
 /**
  * @dev Optional functions from the ERC20 standard.
@@ -249,11 +296,7 @@ contract ERC20Detailed is IERC20 {
      * these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint8 decimals
-    ) public {
+    constructor (string memory name, string memory symbol, uint8 decimals) public {
         _name = name;
         _symbol = symbol;
         _decimals = decimals;
@@ -291,10 +334,6 @@ contract ERC20Detailed is IERC20 {
     }
 }
 
-// File: openzeppelin-solidity-2.3.0/contracts/utils/Address.sol
-
-pragma solidity ^0.5.0;
-
 /**
  * @dev Collection of functions related to the address type,
  */
@@ -316,16 +355,10 @@ library Address {
 
         uint256 size;
         // solhint-disable-next-line no-inline-assembly
-        assembly {
-            size := extcodesize(account)
-        }
+        assembly { size := extcodesize(account) }
         return size > 0;
     }
 }
-
-// File: openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol
-
-pragma solidity ^0.5.0;
 
 /**
  * @title SafeERC20
@@ -340,82 +373,33 @@ library SafeERC20 {
     using SafeMath for uint256;
     using Address for address;
 
-    function safeTransfer(
-        IERC20 token,
-        address to,
-        uint256 value
-    ) internal {
-        callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transfer.selector, to, value)
-        );
+    function safeTransfer(IERC20 token, address to, uint256 value) internal {
+        callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
     }
 
-    function safeTransferFrom(
-        IERC20 token,
-        address from,
-        address to,
-        uint256 value
-    ) internal {
-        callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.transferFrom.selector, from, to, value)
-        );
+    function safeTransferFrom(IERC20 token, address from, address to, uint256 value) internal {
+        callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
     }
 
-    function safeApprove(
-        IERC20 token,
-        address spender,
-        uint256 value
-    ) internal {
+    function safeApprove(IERC20 token, address spender, uint256 value) internal {
         // safeApprove should only be called when setting an initial allowance,
         // or when resetting it to zero. To increase and decrease it, use
         // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
         // solhint-disable-next-line max-line-length
-        require(
-            (value == 0) || (token.allowance(address(this), spender) == 0),
+        require((value == 0) || (token.allowance(address(this), spender) == 0),
             "SafeERC20: approve from non-zero to non-zero allowance"
         );
-        callOptionalReturn(
-            token,
-            abi.encodeWithSelector(token.approve.selector, spender, value)
-        );
+        callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
 
-    function safeIncreaseAllowance(
-        IERC20 token,
-        address spender,
-        uint256 value
-    ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).add(
-            value
-        );
-        callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+    function safeIncreaseAllowance(IERC20 token, address spender, uint256 value) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).add(value);
+        callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
-    function safeDecreaseAllowance(
-        IERC20 token,
-        address spender,
-        uint256 value
-    ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender).sub(
-            value
-        );
-        callOptionalReturn(
-            token,
-            abi.encodeWithSelector(
-                token.approve.selector,
-                spender,
-                newAllowance
-            )
-        );
+    function safeDecreaseAllowance(IERC20 token, address spender, uint256 value) internal {
+        uint256 newAllowance = token.allowance(address(this), spender).sub(value);
+        callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
     }
 
     /**
@@ -439,20 +423,12 @@ library SafeERC20 {
         (bool success, bytes memory returndata) = address(token).call(data);
         require(success, "SafeERC20: low-level call failed");
 
-        if (returndata.length > 0) {
-            // Return data is optional
+        if (returndata.length > 0) { // Return data is optional
             // solhint-disable-next-line max-line-length
-            require(
-                abi.decode(returndata, (bool)),
-                "SafeERC20: ERC20 operation did not succeed"
-            );
+            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
         }
     }
 }
-
-// File: openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol
-
-pragma solidity ^0.5.0;
 
 /**
  * @dev Contract module that helps prevent reentrant calls to a function.
@@ -470,7 +446,7 @@ contract ReentrancyGuard {
     /// @dev counter to allow mutex lock with only one SSTORE operation
     uint256 private _guardCounter;
 
-    constructor() internal {
+    constructor () internal {
         // The counter starts at one to prevent changing it from zero to a non-zero
         // value, which is a more expensive operation.
         _guardCounter = 1;
@@ -487,18 +463,11 @@ contract ReentrancyGuard {
         _guardCounter += 1;
         uint256 localCounter = _guardCounter;
         _;
-        require(
-            localCounter == _guardCounter,
-            "ReentrancyGuard: reentrant call"
-        );
+        require(localCounter == _guardCounter, "ReentrancyGuard: reentrant call");
     }
 }
 
-// File: contracts/interfaces/IStakingRewards.sol
-
-pragma solidity >=0.4.24;
-
-// https://docs.synthetix.io/contracts/source/interfaces/istakingrewards
+// Inheritance
 interface IStakingRewards {
     // Views
     function lastTimeRewardApplicable() external view returns (uint256);
@@ -515,7 +484,7 @@ interface IStakingRewards {
 
     // Mutative
 
-    function stake(uint256 amount) external payable;
+    function stake(uint256 amount) external;
 
     function withdraw(uint256 amount) external;
 
@@ -524,143 +493,18 @@ interface IStakingRewards {
     function exit() external;
 }
 
-// File: contracts/Owned.sol
-
-pragma solidity ^0.5.16;
-
-// https://docs.synthetix.io/contracts/source/contracts/owned
-contract Owned {
-    address public owner;
-    address public nominatedOwner;
-
-    constructor(address _owner) public {
-        require(_owner != address(0), "Owner address cannot be 0");
-        owner = _owner;
-        emit OwnerChanged(address(0), _owner);
-    }
-
-    function nominateNewOwner(address _owner) external onlyOwner {
-        nominatedOwner = _owner;
-        emit OwnerNominated(_owner);
-    }
-
-    function acceptOwnership() external {
-        require(
-            msg.sender == nominatedOwner,
-            "You must be nominated before you can accept ownership"
-        );
-        emit OwnerChanged(owner, nominatedOwner);
-        owner = nominatedOwner;
-        nominatedOwner = address(0);
-    }
-
-    modifier onlyOwner {
-        _onlyOwner();
-        _;
-    }
-
-    function _onlyOwner() private view {
-        require(
-            msg.sender == owner,
-            "Only the contract owner may perform this action"
-        );
-    }
-
-    event OwnerNominated(address newOwner);
-    event OwnerChanged(address oldOwner, address newOwner);
-}
-
-// File: contracts/RewardsDistributionRecipient.sol
-
-pragma solidity ^0.5.16;
-
-// Inheritance
-
-// https://docs.synthetix.io/contracts/source/contracts/rewardsdistributionrecipient
-contract RewardsDistributionRecipient is Owned {
+contract RewardsDistributionRecipient {
     address public rewardsDistribution;
 
     function notifyRewardAmount(uint256 reward) external;
 
     modifier onlyRewardsDistribution() {
-        require(
-            msg.sender == rewardsDistribution,
-            "Caller is not RewardsDistribution contract"
-        );
-        _;
-    }
-
-    function setRewardsDistribution(address _rewardsDistribution)
-        external
-        onlyOwner
-    {
-        rewardsDistribution = _rewardsDistribution;
-    }
-}
-
-// File: contracts/Pausable.sol
-
-pragma solidity ^0.5.16;
-
-// Inheritance
-
-// https://docs.synthetix.io/contracts/source/contracts/pausable
-contract Pausable is Owned {
-    uint256 public lastPauseTime;
-    bool public paused;
-
-    constructor() internal {
-        // This contract is abstract, and thus cannot be instantiated directly
-        require(owner != address(0), "Owner must be set");
-        // Paused will be false, and lastPauseTime will be 0 upon initialisation
-    }
-
-    /**
-     * @notice Change the paused state of the contract
-     * @dev Only the contract owner may call this.
-     */
-    function setPaused(bool _paused) external onlyOwner {
-        // Ensure we're actually changing the state before we do anything
-        if (_paused == paused) {
-            return;
-        }
-
-        // Set our paused state.
-        paused = _paused;
-
-        // If applicable, set the last pause time.
-        if (paused) {
-            lastPauseTime = now;
-        }
-
-        // Let everyone know that our pause state has changed.
-        emit PauseChanged(paused);
-    }
-
-    event PauseChanged(bool isPaused);
-
-    modifier notPaused {
-        require(
-            !paused,
-            "This action cannot be performed while the contract is paused"
-        );
+        require(msg.sender == rewardsDistribution, "Caller is not RewardsDistribution contract");
         _;
     }
 }
 
-// File: contracts/StakingRewards.sol
-
-pragma solidity ^0.5.16;
-
-// Inheritance
-
-// https://docs.synthetix.io/contracts/source/contracts/stakingrewards
-contract StakingRewards is
-    IStakingRewards,
-    RewardsDistributionRecipient,
-    ReentrancyGuard,
-    Pausable
-{
+contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -670,7 +514,7 @@ contract StakingRewards is
     IERC20 public stakingToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
-    uint256 public rewardsDuration = 7 days;
+    uint256 public rewardsDuration;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -683,14 +527,15 @@ contract StakingRewards is
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
-        address _owner,
         address _rewardsDistribution,
         address _rewardsToken,
-        address _stakingToken
-    ) public Owned(_owner) {
+        address _stakingToken,
+        uint256 _rewardsDuration
+    ) public {
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDistribution = _rewardsDistribution;
+        rewardsDuration = _rewardsDuration;
     }
 
     /* ========== VIEWS ========== */
@@ -713,20 +558,12 @@ contract StakingRewards is
         }
         return
             rewardPerTokenStored.add(
-                lastTimeRewardApplicable()
-                    .sub(lastUpdateTime)
-                    .mul(rewardRate)
-                    .mul(1e18)
-                    .div(_totalSupply)
+                lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply)
             );
     }
 
     function earned(address account) public view returns (uint256) {
-        return
-            _balances[account]
-                .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-                .div(1e18)
-                .add(rewards[account]);
+        return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
     function getRewardForDuration() external view returns (uint256) {
@@ -735,15 +572,19 @@ contract StakingRewards is
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function stake(
-        uint256 amount 
-    ) 
-    external 
-    payable
-    nonReentrant 
-    notPaused 
-    updateReward(msg.sender) 
-    {
+    function stakeWithPermit(uint256 amount, uint deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant updateReward(msg.sender) {
+        require(amount > 0, "Cannot stake 0");
+        _totalSupply = _totalSupply.add(amount);
+        _balances[msg.sender] = _balances[msg.sender].add(amount);
+
+        // permit
+        IUniswapV2ERC20(address(stakingToken)).permit(msg.sender, address(this), amount, deadline, v, r, s);
+
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+        emit Staked(msg.sender, amount);
+    }
+
+    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
@@ -751,11 +592,7 @@ contract StakingRewards is
         emit Staked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount)
-        public
-        nonReentrant
-        updateReward(msg.sender)
-    {
+    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         _totalSupply = _totalSupply.sub(amount);
         _balances[msg.sender] = _balances[msg.sender].sub(amount);
@@ -779,11 +616,7 @@ contract StakingRewards is
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward)
-        external
-        onlyRewardsDistribution
-        updateReward(address(0))
-    {
+    function notifyRewardAmount(uint256 reward) external onlyRewardsDistribution updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward.div(rewardsDuration);
         } else {
@@ -796,52 +629,12 @@ contract StakingRewards is
         // This keeps the reward rate in the right range, preventing overflows due to
         // very high values of rewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint256 balance = rewardsToken.balanceOf(address(this));
-        require(
-            rewardRate <= balance.div(rewardsDuration),
-            "Provided reward too high"
-        );
+        uint balance = rewardsToken.balanceOf(address(this));
+        require(rewardRate <= balance.div(rewardsDuration), "Provided reward too high");
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
         emit RewardAdded(reward);
-    }
-
-    // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
-    function recoverERC20(address tokenAddress, uint256 tokenAmount)
-        external
-        onlyOwner
-    {
-        // If it's SNX we have to query the token symbol to ensure its not a proxy or underlying
-        bool isSNX = (keccak256(bytes("SNX")) ==
-            keccak256(bytes(ERC20Detailed(tokenAddress).symbol())));
-        // Cannot recover the staking token or the rewards token
-        require(
-            tokenAddress != address(stakingToken) &&
-                tokenAddress != address(rewardsToken) &&
-                !isSNX,
-            "Cannot withdraw the staking or rewards tokens"
-        );
-        IERC20(tokenAddress).safeTransfer(owner, tokenAmount);
-        emit Recovered(tokenAddress, tokenAmount);
-    }
-
-    // Withdraw after reward period finishes + one rewards duration time
-    function adminWithdraw() external onlyOwner {
-        require(now >= periodFinish.add(rewardsDuration), "Timelock");
-
-        uint256 balance = rewardsToken.balanceOf(address(this));
-        rewardsToken.safeTransfer(owner, balance);
-        emit Recovered(address(rewardsToken), balance);
-    }
-
-    function setRewardsDuration(uint256 _rewardsDuration) external onlyOwner {
-        require(
-            block.timestamp > periodFinish,
-            "Previous rewards period must be complete before changing the duration for the new period"
-        );
-        rewardsDuration = _rewardsDuration;
-        emit RewardsDurationUpdated(rewardsDuration);
     }
 
     /* ========== MODIFIERS ========== */
@@ -862,8 +655,8 @@ contract StakingRewards is
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
-    event RewardsDurationUpdated(uint256 newDuration);
-    event Recovered(address token, uint256 amount);
+}
 
-    function() external payable {}
+interface IUniswapV2ERC20 {
+    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
 }
