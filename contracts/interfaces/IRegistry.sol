@@ -13,4 +13,8 @@ interface IRegistry {
     function deployWallet() external returns (address);
 
     function wallets(address user) external view returns (address);
+
+    function walletRegistered(address wallet) external view returns (bool);
+
+    function distributionContract(address token) external view returns (address);
 }

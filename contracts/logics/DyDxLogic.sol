@@ -3,6 +3,7 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "../interfaces/ISoloMargin.sol";
+import "../interfaces/IDistribution.sol";
 
 interface ERC20Interface {
     function allowance(address, address) external view returns (uint256);
@@ -32,6 +33,8 @@ interface IRegistry {
     function getFee() external pure returns (uint256);
 
     function feeRecipient() external pure returns (address payable);
+
+    function distributionContract(address token) external view returns (address);
 }
 
 contract DSMath {
@@ -200,6 +203,8 @@ contract DydxResolver is Helpers {
             getAccountArgs(),
             getActionsArgs(marketId, toDeposit, true)
         );
+        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20Addr);
+        IDistribution(distribution).stake(tokenAmt);
         emit LogMint(erc20Addr, toDeposit, address(this));
     }
 
@@ -275,6 +280,8 @@ contract DydxResolver is Helpers {
                 div(mul(toWithdraw, fee), 100000)
             );
         }
+        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20Addr);
+        IDistribution(distribution).withdraw(toWithdraw);
         emit LogRedeem(
             erc20Addr == getAddressWETH() ? getAddressETH() : erc20Addr,
             toWithdraw,

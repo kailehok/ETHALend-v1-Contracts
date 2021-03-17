@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
+import "../interfaces/IDistribution.sol";
+
 interface CTokenInterface {
     function redeem(uint256 redeemTokens) external returns (uint256);
 
@@ -119,6 +121,8 @@ interface IRegistry {
     function getFee() external pure returns (uint256);
 
     function feeRecipient() external pure returns (address payable);
+
+    function distributionContract(address token) external view returns (address);
 }
 
 contract DSMath {
@@ -258,6 +262,8 @@ contract CompoundResolver is Helpers {
             setApproval(erc20, toDeposit, cErc20);
             assert(cToken.mint(toDeposit) == 0); // no error message on assert
         }
+        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20);
+        IDistribution(distribution).stake(tokenAmt);
         emit LogMint(erc20, toDeposit, address(this));
     }
 
@@ -289,6 +295,8 @@ contract CompoundResolver is Helpers {
                 div(mul(tokenReturned, fee), 100000)
             );
         }
+        address distribution = IRegistry(registry).distributionContract(erc20);
+        IDistribution(distribution).withdraw(tokenReturned);
         emit LogRedeem(erc20, tokenReturned, address(this));
     }
 
@@ -327,6 +335,8 @@ contract CompoundResolver is Helpers {
                 div(mul(tokenToReturn, fee), 100000)
             );
         }
+        address distribution = IRegistry(registry).distributionContract(erc20);
+        IDistribution(distribution).withdraw(tokenAmt);
         emit LogRedeem(erc20, tokenToReturn, address(this));
     }
 

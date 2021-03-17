@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.7.0;
 
+import "../interfaces/IDistribution.sol";
+
 interface AaveLendingPoolInterface {
     function deposit(
         address reserve,
@@ -130,6 +132,8 @@ interface IRegistry {
     function getFee() external pure returns (uint256);
 
     function feeRecipient() external pure returns (address payable);
+
+    function distributionContract(address token) external view returns (address);
 }
 
 contract DSMath {
@@ -169,6 +173,13 @@ contract Helpers is DSMath {
      */
     function getAddressETH() public pure returns (address eth) {
         eth = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    }
+
+    /**
+     * @dev get registry address
+     */
+    function getRegistryAddress() public pure returns (address) {
+        return 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     }
 
     /**
@@ -258,6 +269,8 @@ contract AaveResolver is Helpers {
             setApproval(erc20, tokenAmt, getLendingPoolCoreAddress());
             aToken.deposit(erc20, tokenAmt, 0);
         }
+        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20);
+        IDistribution(distribution).stake(tokenAmt);
         emit LogMint(erc20, tokenAmt, address(this));
     }
 
@@ -290,6 +303,8 @@ contract AaveResolver is Helpers {
                 div(mul(aTokenAmt, fee), 100000)
             );
         }
+        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(tokenAddress);
+        IDistribution(distribution).withdraw(aTokenAmt);
         emit LogRedeem(tokenAddress, aTokenAmt, address(this));
     }
 }
