@@ -504,9 +504,9 @@ interface IStakingRewards {
 
     function withdraw(uint256 amount) external;
 
-    function getReward() external;
+    function getReward(address user) external;
 
-    function exit() external;
+    function exit(address user) external;
 }
 
 contract RewardsDistributionRecipient {
@@ -520,7 +520,7 @@ contract RewardsDistributionRecipient {
     }
 }
 
-contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard {
+contract DistributionRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -601,18 +601,18 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         emit Withdrawn(msg.sender, amount);
     }
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
-        uint256 reward = rewards[msg.sender];
+    function getReward(address user) public nonReentrant updateReward(user) {
+        uint256 reward = rewards[user];
         if (reward > 0) {
-            rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
-            emit RewardPaid(msg.sender, reward);
+            rewards[user] = 0;
+            rewardsToken.safeTransfer(user, reward);
+            emit RewardPaid(user, reward);
         }
     }
 
-    function exit() external {
-        withdraw(_balances[msg.sender]);
-        getReward();
+    function exit(address user) external {
+        withdraw(_balances[user]);
+        getReward(user);
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */

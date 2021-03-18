@@ -270,8 +270,10 @@ contract AaveResolver is Helpers {
             aToken.deposit(erc20, tokenAmt, 0);
         }
         address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20);
-        IDistribution(distribution).stake(tokenAmt);
-        emit LogMint(erc20, tokenAmt, address(this));
+        if(distribution != address(0)){
+          IDistribution(distribution).stake(tokenAmt);
+          emit LogMint(erc20, tokenAmt, address(this));
+        }
     }
 
     /**
@@ -304,7 +306,9 @@ contract AaveResolver is Helpers {
             );
         }
         address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(tokenAddress);
-        IDistribution(distribution).withdraw(aTokenAmt);
+        if(distribution != address(0)){
+          IDistribution(distribution).withdraw(aTokenAmt);
+        }
         emit LogRedeem(tokenAddress, aTokenAmt, address(this));
     }
 }

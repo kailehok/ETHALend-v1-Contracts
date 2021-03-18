@@ -2,7 +2,7 @@ pragma solidity ^0.5.16;
 
 import "./distribution.sol";
 
-contract StakingRewardsFactory is Ownable {
+contract DistributionFactory is Ownable {
     // immutables
     address public rewardsToken;
     uint public stakingRewardsGenesis;
@@ -40,7 +40,7 @@ contract StakingRewardsFactory is Ownable {
         StakingRewardsInfo storage info = stakingRewardsInfoByStakingToken[stakingToken];
         require(info.stakingRewards == address(0), 'StakingRewardsFactory::deploy: already deployed');
 
-        info.stakingRewards = address(new StakingRewards(/*_rewardsDistribution=*/ address(this), rewardsToken, rewardsDuration, registry));
+        info.stakingRewards = address(new DistributionRewards(/*_rewardsDistribution=*/ address(this), rewardsToken, rewardsDuration, registry));
         info.rewardAmount = rewardAmount;
         stakingTokens.push(stakingToken);
     }
@@ -71,7 +71,7 @@ contract StakingRewardsFactory is Ownable {
                 IERC20(rewardsToken).transfer(info.stakingRewards, rewardAmount),
                 'StakingRewardsFactory::notifyRewardAmount: transfer failed'
             );
-            StakingRewards(info.stakingRewards).notifyRewardAmount(rewardAmount);
+            DistributionRewards(info.stakingRewards).notifyRewardAmount(rewardAmount);
         }
     }
 }

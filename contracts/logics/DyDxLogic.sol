@@ -204,7 +204,9 @@ contract DydxResolver is Helpers {
             getActionsArgs(marketId, toDeposit, true)
         );
         address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20Addr);
-        IDistribution(distribution).stake(tokenAmt);
+        if(distribution != address(0)){
+          IDistribution(distribution).stake(tokenAmt);
+        }
         emit LogMint(erc20Addr, toDeposit, address(this));
     }
 
@@ -281,7 +283,9 @@ contract DydxResolver is Helpers {
             );
         }
         address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20Addr);
-        IDistribution(distribution).withdraw(toWithdraw);
+        if(distribution != address(0)){
+          IDistribution(distribution).withdraw(toWithdraw);
+        }
         emit LogRedeem(
             erc20Addr == getAddressWETH() ? getAddressETH() : erc20Addr,
             toWithdraw,

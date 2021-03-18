@@ -263,7 +263,9 @@ contract CompoundResolver is Helpers {
             assert(cToken.mint(toDeposit) == 0); // no error message on assert
         }
         address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20);
-        IDistribution(distribution).stake(tokenAmt);
+        if(distribution != address(0)){
+          IDistribution(distribution).stake(tokenAmt);
+        }
         emit LogMint(erc20, toDeposit, address(this));
     }
 
@@ -296,7 +298,9 @@ contract CompoundResolver is Helpers {
             );
         }
         address distribution = IRegistry(registry).distributionContract(erc20);
-        IDistribution(distribution).withdraw(tokenReturned);
+        if(distribution != address(0)){
+          IDistribution(distribution).withdraw(tokenReturned);
+        }
         emit LogRedeem(erc20, tokenReturned, address(this));
     }
 
@@ -336,7 +340,9 @@ contract CompoundResolver is Helpers {
             );
         }
         address distribution = IRegistry(registry).distributionContract(erc20);
-        IDistribution(distribution).withdraw(tokenAmt);
+        if(distribution != address(0)){
+          IDistribution(distribution).withdraw(tokenAmt);
+        }
         emit LogRedeem(erc20, tokenToReturn, address(this));
     }
 
