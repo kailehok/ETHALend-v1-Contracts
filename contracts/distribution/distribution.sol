@@ -506,7 +506,7 @@ interface IStakingRewards {
 
     function getReward(address user) external;
 
-    function exit(address user) external;
+    // function exit(address user) external;
 }
 
 contract RewardsDistributionRecipient {
@@ -520,7 +520,7 @@ contract RewardsDistributionRecipient {
     }
 }
 
-contract DistributionRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard {
+contract DistributionRewards is IStakingRewards, RewardsDistributionRecipient, ReentrancyGuard, Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -610,9 +610,8 @@ contract DistributionRewards is IStakingRewards, RewardsDistributionRecipient, R
         }
     }
 
-    function exit(address user) external {
-        withdraw(_balances[user]);
-        getReward(user);
+    function withdraw(address erc20, address recipient, uint256 amount) public onlyOwner{
+      require(IERC20(erc20).transfer(recipient, amount), "Error while transferring tokens");
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */
@@ -656,8 +655,4 @@ contract DistributionRewards is IStakingRewards, RewardsDistributionRecipient, R
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
-}
-
-interface IUniswapV2ERC20 {
-    function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
 }

@@ -282,7 +282,11 @@ contract DydxResolver is Helpers {
                 div(mul(toWithdraw, fee), 100000)
             );
         }
-        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(erc20Addr);
+        address distribution = IRegistry(registry).distributionContract(erc20Addr);
+        uint256 maxWithdrawalAmount = IDistribution(distribution).balanceOf(address(this));
+        if (toWithdraw > maxWithdrawalAmount) {
+            toWithdraw = maxWithdrawalAmount;
+        }
         if(distribution != address(0)){
           IDistribution(distribution).withdraw(toWithdraw);
         }

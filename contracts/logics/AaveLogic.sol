@@ -305,10 +305,16 @@ contract AaveResolver is Helpers {
                 div(mul(aTokenAmt, fee), 100000)
             );
         }
-        address distribution = IRegistry(ISmartWallet(address(this)).registry()).distributionContract(tokenAddress);
+
+        address distribution = IRegistry(registry).distributionContract(tokenAddress);
+        uint256 maxWithdrawalAmount = IDistribution(distribution).balanceOf(address(this));
+        if (aTokenAmt > maxWithdrawalAmount) {
+            aTokenAmt = maxWithdrawalAmount;
+        }
         if(distribution != address(0)){
           IDistribution(distribution).withdraw(aTokenAmt);
         }
+
         emit LogRedeem(tokenAddress, aTokenAmt, address(this));
     }
 }

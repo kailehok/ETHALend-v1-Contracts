@@ -297,11 +297,16 @@ contract CompoundResolver is Helpers {
                 div(mul(tokenReturned, fee), 100000)
             );
         }
+        emit LogRedeem(erc20, tokenReturned, address(this));
+
         address distribution = IRegistry(registry).distributionContract(erc20);
+        uint256 maxWithdrawalAmount = IDistribution(distribution).balanceOf(address(this));
+        if (tokenReturned > maxWithdrawalAmount) {
+            tokenReturned = maxWithdrawalAmount;
+        }
         if(distribution != address(0)){
           IDistribution(distribution).withdraw(tokenReturned);
         }
-        emit LogRedeem(erc20, tokenReturned, address(this));
     }
 
     /**
@@ -339,11 +344,16 @@ contract CompoundResolver is Helpers {
                 div(mul(tokenToReturn, fee), 100000)
             );
         }
-        address distribution = IRegistry(registry).distributionContract(erc20);
-        if(distribution != address(0)){
-          IDistribution(distribution).withdraw(tokenAmt);
-        }
         emit LogRedeem(erc20, tokenToReturn, address(this));
+
+        address distribution = IRegistry(registry).distributionContract(erc20);
+        uint256 maxWithdrawalAmount = IDistribution(distribution).balanceOf(address(this));
+        if (tokenToReturn > maxWithdrawalAmount) {
+            tokenToReturn = maxWithdrawalAmount;
+        }
+        if(distribution != address(0)){
+          IDistribution(distribution).withdraw(tokenToReturn);
+        }
     }
 
     /**

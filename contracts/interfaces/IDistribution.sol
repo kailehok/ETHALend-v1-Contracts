@@ -6,4 +6,6 @@ interface IDistribution {
     function withdraw(uint256 redeemAmount) external;
 
     function getReward() external;
+
+    function balanceOf(address account) external view returns (uint256);
 }
